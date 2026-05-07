@@ -9,7 +9,7 @@ from aiogram import Bot, Dispatcher, types
 from aiogram.filters import CommandStart, Command
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton, CallbackQuery
 import os
-TOKEN = os.getenv("TOKEN")
+TOKEN = os.getenv("8684302400:AAGYWoBEF_UGS6Da960lou2Uqb_fHDYOO7Y")
 
 bot = Bot(token=TOKEN)
 dp = Dispatcher()
