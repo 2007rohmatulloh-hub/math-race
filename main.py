@@ -13,37 +13,11 @@ CHANNEL_ID = -1002973042972
 MAIN_CHANNEL_LINK = "https://t.me/+yKejphFq__MwOGUy"
 MARAFON_GROUP_LINK = "https://t.me/+gVFz9nv8h1NlNjIy"
 
-REQUIRED_INVITES = 3
-
-
-# 🔥 ДОБАВЛЕНО
-CHANNELS = [
-    CHANNEL_ID,
-    -1002222222222,
-    -1003333333333
-]
-
-CHANNEL_LINKS = [
-    MAIN_CHANNEL_LINK ,
-    "https://t.me/kanal2",
-    "https://t.me/kanal3"
-]
+REQUIRED_INVITES = 5
 
 
 bot = Bot(token=API_TOKEN)
 dp = Dispatcher()
-
-
-# 🔥 ПРОВЕРКА ПОДПИСКИ
-async def check_subscriptions(user_id):
-    for channel in CHANNELS:
-        try:
-            member = await bot.get_chat_member(channel, user_id)
-            if member.status not in ["member", "administrator", "creator"]:
-                return False
-        except:
-            return False
-    return True
 
 
 # DATABASE
@@ -101,11 +75,8 @@ async def start_handler(message: types.Message):
 
     kb = InlineKeyboardMarkup(
     inline_keyboard=[
-        [InlineKeyboardButton(text="📢 Kanal 1", url=CHANNEL_LINKS[0])],
-        [InlineKeyboardButton(text="📢 Kanal 2", url=CHANNEL_LINKS[1])],
-        [InlineKeyboardButton(text="📢 Kanal 3", url=CHANNEL_LINKS[2])],
+        [InlineKeyboardButton(text="📢 Kanalga a'zo bo'lish", url=MAIN_CHANNEL_LINK)],
         [InlineKeyboardButton(text="📤 Do'stlarga ulashish", url=f"https://t.me/share/url?url={link}&text=Kitob marafoniga qo'shiling!")],
-        [InlineKeyboardButton(text="📊 Reyting", callback_data="rating")],
         [InlineKeyboardButton(text="✅ Natijani tekshirish", callback_data="check")]
     ]
     )
@@ -116,20 +87,20 @@ async def start_handler(message: types.Message):
 kitobxonlik ko‘nikmasini shakllantirish-chi?
 
 📖 Unda sizni birgalikda ko‘plab kitoblarni o‘qib,  
-oxirida o‘sha kitoblar bo‘yicha testlar,  
-sertifikatlar va sovg‘alarni qo‘lga kiritadigan  
-Kitobxon qizlar jamoasiga taklif qilamiz! 🎀
+oxirida o‘sha kitoblar bo‘yicha **testlar**,  
+**sertifikatlar** va **sovg‘alarni** qo‘lga kiritadigan  
+**Kitobxon qizlar jamoasiga taklif qilamiz!** 🎀
 
-🚀 Jamoaga qo‘shilishga tayyormisiz?
+🚀 **Jamoaga qo‘shilishga tayyormisiz?**
 
 Unda quyidagi havolani do‘stlaringizga yuboring  
-va 3 ta do‘stingizni taklif qiling 👇
+va **5 ta do‘stingizni taklif qiling** 👇
 
 🔗 `{link}`
 
-🎁 3 ta do‘stingiz kanalga qo‘shilgach sizga maxsus guruh havolasi beriladi!
+🎁 5 ta do‘stingiz kanalga qo‘shilgach sizga **maxsus guruh havolasi** beriladi!
 
-📚 Aytgancha, bu kanalda bepul arab tili darslari ham bor.**
+📚 Aytgancha, bu kanalda **bepul arab tili darslari ham bor.**
 """ 
 
     await message.answer(text, reply_markup=kb)
@@ -188,15 +159,6 @@ async def check(callback: types.CallbackQuery):
 
     user_id = callback.from_user.id
 
-    is_subscribed = await check_subscriptions(user_id)
-
-    if not is_subscribed:
-        await callback.answer(
-            "❗ Iltimos, barcha 3 ta kanalga a'zo bo‘ling",
-            show_alert=True
-        )
-        return
-
     conn = sqlite3.connect("referrals.db")
     cur = conn.cursor()
 
@@ -206,62 +168,23 @@ async def check(callback: types.CallbackQuery):
     )
 
     row = cur.fetchone()
+
     count = row[0] if row else 0
 
     conn.close()
 
     if count >= REQUIRED_INVITES:
+
         await callback.message.answer(
             f"🎉 Tabriklayman!\n\nMana guruh havolasi:\n{MARAFON_GROUP_LINK}"
         )
+
     else:
+
         await callback.answer(
             f"Siz {count}/{REQUIRED_INVITES} odam taklif qildingiz",
             show_alert=True
         )
-
-
-# 🔥 РЕЙТИНГ
-@dp.callback_query(F.data == "rating")
-async def rating(callback: types.CallbackQuery):
-
-    user_id = callback.from_user.id
-
-    conn = sqlite3.connect("referrals.db")
-    cur = conn.cursor()
-
-    cur.execute("""
-        SELECT user_id, invited_count
-        FROM users
-        ORDER BY invited_count DESC
-        LIMIT 10
-    """)
-    top = cur.fetchall()
-
-    cur.execute("""
-        SELECT COUNT(*) + 1
-        FROM users
-        WHERE invited_count > (
-            SELECT invited_count FROM users WHERE user_id=?
-        )
-    """, (user_id,))
-    place = cur.fetchone()[0]
-
-    cur.execute("SELECT invited_count FROM users WHERE user_id=?", (user_id,))
-    my = cur.fetchone()
-    my_count = my[0] if my else 0
-
-    conn.close()
-
-    text = "🏆 TOP 10:\n\n"
-
-    for i, user in enumerate(top, 1):
-        text += f"{i}. {user[0]} — {user[1]}\n"
-
-    text += f"\n📊 Sizning natijangiz:\n"
-    text += f"Joy: {place}\nTakliflar: {my_count}"
-
-    await callback.message.answer(text)
 
 
 # STATS
@@ -308,3 +231,4 @@ async def main():
 
 if __name__ == "__main__":
     asyncio.run(main())
+
