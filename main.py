@@ -68,6 +68,20 @@ async def start_handler(message: types.Message):
             (user_id, referrer_id)
         )
 
+    else:
+        cur.execute(
+            "SELECT referrer_id FROM users WHERE user_id=?",
+            (user_id,)
+        )
+
+        old_ref = cur.fetchone()
+
+        if old_ref and old_ref[0] is None and referrer_id:
+            cur.execute(
+                "UPDATE users SET referrer_id=? WHERE user_id=?",
+                (referrer_id, user_id)
+            )
+
     conn.commit()
     conn.close()
 
@@ -231,4 +245,3 @@ async def main():
 
 if __name__ == "__main__":
     asyncio.run(main())
-
