@@ -1,5 +1,7 @@
 import asyncio
 import sqlite3
+import os
+
 from aiogram import Bot, Dispatcher, types, F
 from aiogram.filters import CommandStart, Command, ChatMemberUpdatedFilter
 from aiogram.filters.chat_member_updated import JOIN_TRANSITION
@@ -7,7 +9,7 @@ from aiogram.utils.deep_linking import create_start_link, decode_payload
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton, ChatMemberUpdated
 
 
-API_TOKEN = "8602948149:AAHGCR5a-sCgs3wKo5d6FYUc_ZffzxQO4Ww"
+API_TOKEN = os.getenv("BOT_TOKEN")
 
 CHANNEL_ID = -1002973042972
 MAIN_CHANNEL_LINK = "https://t.me/+yKejphFq__MwOGUy"
@@ -53,22 +55,31 @@ async def start_handler(message: types.Message):
     if len(args) > 1:
         try:
             payload = decode_payload(args[1])
+
             if payload.isdigit():
                 referrer_id = int(payload)
+
         except:
+
             if args[1].isdigit():
                 referrer_id = int(args[1])
 
-    cur.execute("SELECT user_id FROM users WHERE user_id=?", (user_id,))
+    cur.execute(
+        "SELECT user_id FROM users WHERE user_id=?",
+        (user_id,)
+    )
+
     user = cur.fetchone()
 
     if not user:
+
         cur.execute(
             "INSERT INTO users (user_id, referrer_id) VALUES (?,?)",
             (user_id, referrer_id)
         )
 
     else:
+
         cur.execute(
             "SELECT referrer_id FROM users WHERE user_id=?",
             (user_id,)
@@ -77,6 +88,7 @@ async def start_handler(message: types.Message):
         old_ref = cur.fetchone()
 
         if old_ref and old_ref[0] is None and referrer_id:
+
             cur.execute(
                 "UPDATE users SET referrer_id=? WHERE user_id=?",
                 (referrer_id, user_id)
@@ -85,14 +97,35 @@ async def start_handler(message: types.Message):
     conn.commit()
     conn.close()
 
-    link = await create_start_link(bot, str(user_id), encode=True)
+    link = await create_start_link(
+        bot,
+        str(user_id),
+        encode=True
+    )
 
     kb = InlineKeyboardMarkup(
-    inline_keyboard=[
-        [InlineKeyboardButton(text="📢 Kanalga a'zo bo'lish", url=MAIN_CHANNEL_LINK)],
-        [InlineKeyboardButton(text="📤 Do'stlarga ulashish", url=f"https://t.me/share/url?url={link}&text=Kitob marafoniga qo'shiling!")],
-        [InlineKeyboardButton(text="✅ Natijani tekshirish", callback_data="check")]
-    ]
+        inline_keyboard=[
+            [
+                InlineKeyboardButton(
+                    text="📢 Kanalga a'zo bo'lish",
+                    url=MAIN_CHANNEL_LINK
+                )
+            ],
+
+            [
+                InlineKeyboardButton(
+                    text="📤 Do'stlarga ulashish",
+                    url=f"https://t.me/share/url?url={link}&text=Kitob marafoniga qo'shiling!"
+                )
+            ],
+
+            [
+                InlineKeyboardButton(
+                    text="✅ Natijani tekshirish",
+                    callback_data="check"
+                )
+            ]
+        ]
     )
 
     text = f"""
@@ -100,14 +133,14 @@ async def start_handler(message: types.Message):
 ✨ *Kitobxon qizlar jamoasi* bilan birgalikda kunlik mutolaa qilib,
 kitobxonlik ko‘nikmasini shakllantirish-chi?
 
-📖 Unda sizni birgalikda ko‘plab kitoblarni o‘qib,  
-oxirida o‘sha kitoblar bo‘yicha **testlar**,  
-**sertifikatlar** va **sovg‘alarni** qo‘lga kiritadigan  
+📖 Unda sizni birgalikda ko‘plab kitoblarni o‘qib,
+oxirida o‘sha kitoblar bo‘yicha **testlar**,
+**sertifikatlar** va **sovg‘alarni** qo‘lga kiritadigan
 **Kitobxon qizlar jamoasiga taklif qilamiz!** 🎀
 
 🚀 **Jamoaga qo‘shilishga tayyormisiz?**
 
-Unda quyidagi havolani do‘stlaringizga yuboring  
+Unda quyidagi havolani do‘stlaringizga yuboring
 va **5 ta do‘stingizni taklif qiling** 👇
 
 🔗 `{link}`
@@ -115,13 +148,20 @@ va **5 ta do‘stingizni taklif qiling** 👇
 🎁 5 ta do‘stingiz kanalga qo‘shilgach sizga **maxsus guruh havolasi** beriladi!
 
 📚 Aytgancha, bu kanalda **bepul arab tili darslari ham bor.**
-""" 
+"""
 
-    await message.answer(text, reply_markup=kb)
+    await message.answer(
+        text,
+        reply_markup=kb
+    )
 
 
 # USER JOIN CHANNEL
-@dp.chat_member(ChatMemberUpdatedFilter(member_status_changed=JOIN_TRANSITION))
+@dp.chat_member(
+    ChatMemberUpdatedFilter(
+        member_status_changed=JOIN_TRANSITION
+    )
+)
 async def user_join(event: ChatMemberUpdated):
 
     if event.chat.id != CHANNEL_ID:
@@ -140,6 +180,7 @@ async def user_join(event: ChatMemberUpdated):
     data = cur.fetchone()
 
     if data:
+
         referrer_id, counted = data
 
         if referrer_id and counted == 0:
@@ -157,10 +198,12 @@ async def user_join(event: ChatMemberUpdated):
             conn.commit()
 
             try:
+
                 await bot.send_message(
                     referrer_id,
                     "🎉 Siz yangi odam taklif qildingiz! +1"
                 )
+
             except:
                 pass
 
