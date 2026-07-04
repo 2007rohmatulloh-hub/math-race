@@ -9,9 +9,9 @@ from aiogram.utils.deep_linking import create_start_link, decode_payload
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton, ChatMemberUpdated
 
 # Токен берется из переменных окружения
-# API_TOKEN = os.getenv("BOT_TOKEN")
+API_TOKEN = os.getenv("BOT_TOKEN")
 
-API_TOKEN = "8602948149:AAFfDfqPqCQR4c7JX6uVqxHqepiudWUa8Do"
+# API_TOKEN = "8602948149:AAFfDfqPqCQR4c7JX6uVqxHqepiudWUa8Do"
 
 CHANNEL_ID = -1002973042972
 MAIN_CHANNEL_LINK = "https://t.me/+yKejphFq__MwOGUy"
